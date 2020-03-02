@@ -7,18 +7,18 @@ Provides decoding of basic exif and tiff encoded data. Still in alpha - no guara
 Suggestions and pull requests are welcome.  Functionality is split into two packages - "exif" and "tiff"
 The exif package depends on the tiff package. 
 
-Like goexif? - Bitcoin Cash tips welcome: 1DrU5V37nTXuv4vnRLVpahJEjhdATNgoBh
+This is a fork of [rwcarlsen/goexif](https://github.com/rwcarlsen/goexif).
 
 To install, in a terminal type:
 
 ```
-go get github.com/rwcarlsen/goexif/exif
+go get github.com/simpicapp/goexif/exif
 ```
 
 Or if you just want the tiff package:
 
 ```
-go get github.com/rwcarlsen/goexif/tiff
+go get github.com/simpicapp/goexif/tiff
 ```
 
 Example usage:
@@ -31,8 +31,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/rwcarlsen/goexif/exif"
-	"github.com/rwcarlsen/goexif/mknote"
+	"github.com/simpicapp/goexif/exif"
+	"github.com/simpicapp/goexif/mknote"
 )
 
 func ExampleDecode() {
@@ -67,6 +67,3 @@ func ExampleDecode() {
 	fmt.Println("lat, long: ", lat, ", ", long)
 }
 ```
-
-<!--golang-->
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/5e166f74cdb82b999ccd84e3c4dc4348 "githalytics.com")](http://githalytics.com/rwcarlsen/goexif)
