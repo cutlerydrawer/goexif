@@ -229,16 +229,13 @@ func Decode(r io.Reader) (*Exif, error) {
 	var isTiff bool
 	var isRawExif bool
 	var assumeJPEG bool
-	switch string(header) {
-	case "II*\x00":
-		// TIFF - Little endian (Intel)
+
+	if header[0] == 0x49 && header[1] == 0x49 || header[0] == 0x4D && header[1] == 0x4D {
+		// "II" and "MM" prefixes for little and big-endian formats
 		isTiff = true
-	case "MM\x00*":
-		// TIFF - Big endian (Motorola)
-		isTiff = true
-	case "Exif":
+	} else if string(header) == "Exif" {
 		isRawExif = true
-	default:
+	} else {
 		// Not TIFF, assume JPEG
 		assumeJPEG = true
 	}
