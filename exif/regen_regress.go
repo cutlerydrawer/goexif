@@ -48,10 +48,6 @@ func makeExpected(files []string, w io.Writer) {
 	fmt.Fprintf(w, "var regressExpected = map[string]map[FieldName]string{\n")
 
 	for _, name := range files {
-		if !strings.HasSuffix(name, ".jpg") {
-			continue
-		}
-
 		f, err := os.Open(name)
 		if err != nil {
 			continue
@@ -74,7 +70,7 @@ func makeExpected(files []string, w io.Writer) {
 		}))
 		sort.Strings(items)
 
-		fmt.Fprintf(w, "\"%v\": map[FieldName]string{\n", filepath.Base(name))
+		fmt.Fprintf(w, "\"%v\": {\n", filepath.Base(name))
 		for _, item := range items {
 			fmt.Fprint(w, item)
 		}

@@ -9,7 +9,12 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
+)
+
+const (
+	tiffMagic     int16 = 42    // 0x2A00 or 0x002A
+	olympusMagic1 int16 = 20306 // MMOR or IIRO
+	olympusMagic2 int16 = 21330 // MMSR or IIRS
 )
 
 // ReadAtReader is used when decoding Tiff tags and directories
@@ -56,7 +61,7 @@ func Decode(r io.Reader) (*Tiff, error) {
 	// check for special tiff marker
 	var sp int16
 	err = binary.Read(buf, t.Order, &sp)
-	if err != nil || 42 != sp {
+	if err != nil || tiffMagic != sp && olympusMagic1 != sp && olympusMagic2 != sp {
 		return nil, errors.New("tiff: could not find special tiff marker")
 	}
 
@@ -71,7 +76,6 @@ func Decode(r io.Reader) (*Tiff, error) {
 	var d *Dir
 	prev := map[int32]bool{offset: true}
 	for offset != 0 {
-		log.Printf("Seeking to offset %d\n", offset)
 		// seek to offset
 		_, err := buf.Seek(int64(offset), 0)
 		if err != nil {

@@ -33,10 +33,6 @@ func TestDecode(t *testing.T) {
 
 	cnt := 0
 	for _, name := range names {
-		if !strings.HasSuffix(name, ".jpg") {
-			t.Logf("skipping non .jpg file %v", name)
-			continue
-		}
 		t.Logf("testing file %v", name)
 		f, err := os.Open(filepath.Join(fpath, name))
 		if err != nil {
