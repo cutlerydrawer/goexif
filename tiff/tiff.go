@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 )
 
 // ReadAtReader is used when decoding Tiff tags and directories
@@ -68,8 +69,9 @@ func Decode(r io.Reader) (*Tiff, error) {
 
 	// load IFD's
 	var d *Dir
-	prev := offset
+	prev := map[int32]bool{offset: true}
 	for offset != 0 {
+		log.Printf("Seeking to offset %d\n", offset)
 		// seek to offset
 		_, err := buf.Seek(int64(offset), 0)
 		if err != nil {
@@ -86,10 +88,10 @@ func Decode(r io.Reader) (*Tiff, error) {
 			return nil, err
 		}
 
-		if offset == prev {
+		if prev[offset] {
 			return nil, errors.New("tiff: recursive IFD")
 		}
-		prev = offset
+		prev[offset] = true
 
 		t.Dirs = append(t.Dirs, d)
 	}
