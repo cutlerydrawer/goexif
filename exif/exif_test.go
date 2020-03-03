@@ -250,3 +250,21 @@ func TestZeroLengthTagError(t *testing.T) {
 		t.Fatal("wrong error:", err.Error())
 	}
 }
+
+// Check for a 0-length tag value
+func TestRecursiveIfdsError(t *testing.T) {
+	name := filepath.Join(*dataDir, "corrupt/recursive_ifds.dat")
+	f, err := os.Open(name)
+	if err != nil {
+		t.Fatalf("%v\n", err)
+	}
+	defer f.Close()
+
+	_, err = Decode(f)
+	if err == nil {
+		t.Fatal("no error on bad exif data")
+	}
+	if !strings.Contains(err.Error(), "recursive IFD") {
+		t.Fatal("wrong error:", err.Error())
+	}
+}
