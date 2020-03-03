@@ -215,7 +215,20 @@ func TestHugeTagError(t *testing.T) {
 	if err == nil {
 		t.Fatal("no error on bad exif data")
 	}
-	if !strings.Contains(err.Error(), "short read") {
+	if !strings.Contains(err.Error(), "integer overflow") {
+		t.Fatal("wrong error:", err.Error())
+	}
+}
+
+// Contains a very high tag count that will overflow a uint32 when multiplied by the type size
+func TestTagCountOverflowError(t *testing.T) {
+	const testData = "II*\x00\x10\x00\x00\x00000000000000\x03\x00\x01\x00\x00\x800000"
+
+	_, err := Decode(bytes.NewReader([]byte(testData)))
+	if err == nil {
+		t.Fatalf("no error on bad exif data")
+	}
+	if !strings.Contains(err.Error(), "integer overflow") {
 		t.Fatal("wrong error:", err.Error())
 	}
 }

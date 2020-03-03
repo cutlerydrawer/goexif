@@ -135,12 +135,14 @@ func DecodeTag(r ReadAtReader, order binary.ByteOrder) (*Tag, error) {
 	// There seems to be a relatively common corrupt tag which has a Count of
 	// MaxUint32. This is probably not a valid value, so return early.
 	if t.Count == 1<<32-1 {
-		return t, errors.New("invalid Count offset in tag")
+		return nil, errors.New("invalid Count offset in tag")
 	}
 
-	valLen := typeSize[t.Type] * t.Count
+	valLen, overflow := mulOverflows(typeSize[t.Type], t.Count)
 	if valLen == 0 {
 		return t, errors.New("zero length tag value")
+	} else if overflow {
+		return t, errors.New("invalid Count offset in tag (integer overflow)")
 	}
 
 	if valLen > 4 {
@@ -418,6 +420,14 @@ func (t *Tag) MarshalJSON() ([]byte, error) {
 		}
 	}
 	return []byte(fmt.Sprintf(`[%s]`, strings.Join(rv, ","))), nil
+}
+
+func mulOverflows(a, b uint32) (uint32, bool) {
+	c := a * b
+	if a <= 1 || b <= 1 {
+		return c, false
+	}
+	return c, c/b != a
 }
 
 func nullString(in []byte) []byte {
