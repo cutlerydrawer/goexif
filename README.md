@@ -7,7 +7,11 @@ Provides decoding of basic exif and tiff encoded data. Still in alpha - no guara
 Suggestions and pull requests are welcome.  Functionality is split into two packages - "exif" and "tiff"
 The exif package depends on the tiff package. 
 
-This is a fork of [rwcarlsen/goexif](https://github.com/rwcarlsen/goexif).
+This is a fork of [rwcarlsen/goexif](https://github.com/rwcarlsen/goexif). Changes over the original:
+* Fixed several panics/hangs identified by fuzz testing
+* Added support for parsing Olympus Raw Format (ORF) files
+
+----
 
 To install, in a terminal type:
 
