@@ -274,7 +274,9 @@ func Decode(r io.Reader) (*Exif, error) {
 	case assumeJPEG:
 		// Locate the JPEG APP1 header.
 		sec, err = newAppSec(jpeg_APP1, r)
-		if err != nil {
+		if err == io.EOF {
+			return nil, NotFoundError
+		} else if err != nil {
 			return nil, err
 		}
 		// Strip away EXIF header.
