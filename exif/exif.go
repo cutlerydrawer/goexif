@@ -27,6 +27,11 @@ const (
 	interopPointer = 0xA005
 )
 
+var (
+	// NotFoundError is returned if EXIF information is not found in a JPEG input file.
+	NotFoundError = errors.New("exif: failed to find exif intro marker")
+)
+
 // A decodeError is returned when the image cannot be decoded as a tiff image.
 type decodeError struct {
 	cause error
@@ -640,13 +645,13 @@ func (app *appSec) reader() *bytes.Reader {
 // the start of the exif's tiff encoded portion.
 func (app *appSec) exifReader() (*bytes.Reader, error) {
 	if len(app.data) < 6 {
-		return nil, errors.New("exif: failed to find exif intro marker")
+		return nil, NotFoundError
 	}
 
 	// read/check for exif special mark
 	exif := app.data[:6]
 	if !bytes.Equal(exif, append([]byte("Exif"), 0x00, 0x00)) {
-		return nil, errors.New("exif: failed to find exif intro marker")
+		return nil, NotFoundError
 	}
 	return bytes.NewReader(app.data[6:]), nil
 }
