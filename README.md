@@ -1,7 +1,7 @@
 goexif
 ======
 
-[![GoDoc](https://godoc.org/github.com/rwcarlsen/goexif?status.svg)](https://godoc.org/github.com/rwcarlsen/goexif)
+[![PkgGoDev](https://pkg.go.dev/badge/simpicapp/goexif)](https://pkg.go.dev/simpicapp/goexif)
 
 Provides decoding of basic exif and tiff encoded data. Still in alpha - no guarantees.
 Suggestions and pull requests are welcome.  Functionality is split into two packages - "exif" and "tiff"
@@ -10,6 +10,7 @@ The exif package depends on the tiff package.
 This is a fork of [rwcarlsen/goexif](https://github.com/rwcarlsen/goexif). Changes over the original:
 * Fixed several panics/hangs identified by fuzz testing
 * Added support for parsing Olympus Raw Format (ORF) files
+* Exported `exif.NotFoundError` to identify JPEG files with no EXIF data vs other parsing issues
 
 ----
 
