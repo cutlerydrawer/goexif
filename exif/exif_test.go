@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
@@ -57,7 +56,7 @@ func TestDecode(t *testing.T) {
 
 func TestDecodeRawEXIF(t *testing.T) {
 	rawFile := filepath.Join(*dataDir, "samples", "raw.exif")
-	raw, err := ioutil.ReadFile(rawFile)
+	raw, err := os.ReadFile(rawFile)
 	if err != nil {
 		t.Fatal(err)
 	}

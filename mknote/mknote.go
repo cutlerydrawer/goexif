@@ -20,7 +20,7 @@ var (
 type canon struct{}
 
 // Parse decodes all Canon makernote data found in x and adds it to x.
-func (_ *canon) Parse(x *exif.Exif) error {
+func (*canon) Parse(x *exif.Exif) error {
 	m, err := x.Get(exif.MakerNote)
 	if err != nil {
 		return nil
@@ -51,11 +51,11 @@ func (_ *canon) Parse(x *exif.Exif) error {
 type nikonV3 struct{}
 
 // Parse decodes all Nikon makernote data found in x and adds it to x.
-func (_ *nikonV3) Parse(x *exif.Exif) error {
+func (*nikonV3) Parse(x *exif.Exif) error {
 	m, err := x.Get(exif.MakerNote)
 	if err != nil {
 		return nil
-	} else if len(m.Val) < 6 || bytes.Compare(m.Val[:6], []byte("Nikon\000")) != 0 {
+	} else if len(m.Val) < 6 || !bytes.Equal(m.Val[:6], []byte("Nikon\000")) {
 		return nil
 	}
 

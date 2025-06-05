@@ -392,9 +392,9 @@ func (t *Tag) String() string {
 	}
 
 	if t.Count == 1 {
-		return strings.Trim(fmt.Sprintf("%s", data), "[]")
+		return strings.Trim(string(data), "[]")
 	}
-	return fmt.Sprintf("%s", data)
+	return string(data)
 }
 
 func (t *Tag) MarshalJSON() ([]byte, error) {

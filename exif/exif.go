@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math"
 	"strconv"
 	"strings"
@@ -95,17 +94,17 @@ func (te tiffErrors) Error() string {
 	return strings.Join(allErrors, "\n")
 }
 
-// IsCriticalError, given the error returned by Decode, reports whether the
+// IsCriticalError reports, given the error returned by Decode, whether the
 // returned *Exif may contain usable information.
 func IsCriticalError(err error) bool {
-	_, ok := err.(tiffErrors)
-	return !ok
+	return !errors.Is(err, tiffErrors{})
 }
 
 // IsExifError reports whether the error happened while decoding the EXIF
 // sub-IFD.
 func IsExifError(err error) bool {
-	if te, ok := err.(tiffErrors); ok {
+	var te tiffErrors
+	if errors.As(err, &te) {
 		_, isExif := te[loadExif]
 		return isExif
 	}
@@ -114,7 +113,8 @@ func IsExifError(err error) bool {
 
 // IsGPSError reports whether the error happened while decoding the GPS sub-IFD.
 func IsGPSError(err error) bool {
-	if te, ok := err.(tiffErrors); ok {
+	var te tiffErrors
+	if errors.As(err, &te) {
 		_, isGPS := te[loadExif]
 		return isGPS
 	}
@@ -150,7 +150,7 @@ var stagePrefix = map[tiffError]string{
 // parsing continues with the remaining sub-IFDs.
 func (p *parser) Parse(x *Exif) error {
 	if len(x.Tiff.Dirs) == 0 {
-		return errors.New("Invalid exif data")
+		return errors.New("invalid exif data")
 	}
 	x.LoadTags(x.Tiff.Dirs[0], exifFields, false)
 
@@ -292,7 +292,7 @@ func Decode(r io.Reader) (*Exif, error) {
 	}
 
 	er.Seek(0, 0)
-	raw, err := ioutil.ReadAll(er)
+	raw, err := io.ReadAll(er)
 	if err != nil {
 		return nil, decodeError{cause: err}
 	}
@@ -419,14 +419,14 @@ func ratFloat(num, dem int64) float64 {
 // Tries to parse a Geo degrees value from a string as it was found in some
 // EXIF data.
 // Supported formats so far:
-// - "52,00000,50,00000,34,01180" ==> 52 deg 50'34.0118"
-//   Probably due to locale the comma is used as decimal mark as well as the
-//   separator of three floats (degrees, minutes, seconds)
-//   http://en.wikipedia.org/wiki/Decimal_mark#Hindu.E2.80.93Arabic_numeral_system
-// - "52.0,50.0,34.01180" ==> 52deg50'34.0118"
-// - "52,50,34.01180"     ==> 52deg50'34.0118"
+//   - "52,00000,50,00000,34,01180" ==> 52 deg 50'34.0118"
+//     Probably due to locale the comma is used as decimal mark as well as the
+//     separator of three floats (degrees, minutes, seconds)
+//     http://en.wikipedia.org/wiki/Decimal_mark#Hindu.E2.80.93Arabic_numeral_system
+//   - "52.0,50.0,34.01180" ==> 52deg50'34.0118"
+//   - "52,50,34.01180"     ==> 52deg50'34.0118"
 func parseTagDegreesString(s string) (float64, error) {
-	const unparsableErrorFmt = "Unknown coordinate format: %s"
+	const unparsableErrorFmt = "unknown coordinate format: %s"
 	isSplitRune := func(c rune) bool {
 		return c == ',' || c == ';'
 	}
@@ -505,7 +505,7 @@ func tagDegrees(tag *tiff.Tag) (float64, error) {
 		return parseTagDegreesString(s)
 	default:
 		// don't know how to parse value, give up
-		return 0.0, fmt.Errorf("Malformed EXIF Tag Degrees")
+		return 0.0, fmt.Errorf("malformed EXIF Tag Degrees")
 	}
 }
 
@@ -513,39 +513,39 @@ func tagDegrees(tag *tiff.Tag) (float64, error) {
 // whether it was present.
 func (x *Exif) LatLong() (lat, long float64, err error) {
 	// All calls of x.Get might return an TagNotPresentError
-	longTag, err := x.Get(FieldName("GPSLongitude"))
+	longTag, err := x.Get("GPSLongitude")
 	if err != nil {
 		return
 	}
-	ewTag, err := x.Get(FieldName("GPSLongitudeRef"))
+	ewTag, err := x.Get("GPSLongitudeRef")
 	if err != nil {
 		return
 	}
-	latTag, err := x.Get(FieldName("GPSLatitude"))
+	latTag, err := x.Get("GPSLatitude")
 	if err != nil {
 		return
 	}
-	nsTag, err := x.Get(FieldName("GPSLatitudeRef"))
+	nsTag, err := x.Get("GPSLatitudeRef")
 	if err != nil {
 		return
 	}
 	if long, err = tagDegrees(longTag); err != nil {
-		return 0, 0, fmt.Errorf("Cannot parse longitude: %v", err)
+		return 0, 0, fmt.Errorf("cannot parse longitude: %v", err)
 	}
 	if lat, err = tagDegrees(latTag); err != nil {
-		return 0, 0, fmt.Errorf("Cannot parse latitude: %v", err)
+		return 0, 0, fmt.Errorf("cannot parse latitude: %v", err)
 	}
 	ew, err := ewTag.StringVal()
 	if err == nil && ew == "W" {
 		long *= -1.0
 	} else if err != nil {
-		return 0, 0, fmt.Errorf("Cannot parse longitude: %v", err)
+		return 0, 0, fmt.Errorf("cannot parse longitude: %v", err)
 	}
 	ns, err := nsTag.StringVal()
 	if err == nil && ns == "S" {
 		lat *= -1.0
 	} else if err != nil {
-		return 0, 0, fmt.Errorf("Cannot parse longitude: %v", err)
+		return 0, 0, fmt.Errorf("cannot parse longitude: %v", err)
 	}
 	return lat, long, nil
 }
@@ -583,9 +583,9 @@ func (x *Exif) JpegThumbnail() ([]byte, error) {
 	return x.Raw[start : start+l], nil
 }
 
-// MarshalJson implements the encoding/json.Marshaler interface providing output of
+// MarshalJSON implements the encoding/json.Marshaler interface providing output of
 // all EXIF fields present (names and values).
-func (x Exif) MarshalJSON() ([]byte, error) {
+func (x *Exif) MarshalJSON() ([]byte, error) {
 	return json.Marshal(x.main)
 }
 
@@ -614,7 +614,7 @@ func newAppSec(marker byte, r io.Reader) (*appSec, error) {
 		}
 
 		dataLenBytes := make([]byte, 2)
-		for k, _ := range dataLenBytes {
+		for k := range dataLenBytes {
 			c, err := br.ReadByte()
 			if err != nil {
 				return nil, err
@@ -636,11 +636,6 @@ func newAppSec(marker byte, r io.Reader) (*appSec, error) {
 		app.data = append(app.data, s[:n]...)
 	}
 	return app, nil
-}
-
-// reader returns a reader on this appSec.
-func (app *appSec) reader() *bytes.Reader {
-	return bytes.NewReader(app.data)
 }
 
 // exifReader returns a reader on this appSec with the read cursor advanced to
